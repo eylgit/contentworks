@@ -1,0 +1,56 @@
+name: podcastize
+description: >
+  Rules for a single-voice podcast script that will be read aloud by a
+  text-to-speech engine, to a listener who is driving or doing housework.
+  The listener cannot scroll back, so clarity beats density.
+
+rules:
+  - id: title-line
+    type: first_line_matches
+    description: >
+      The first line must be the episode title in the exact form
+      "Series: Episode NN - Title". Podcast apps read this line as the title,
+      so anything else breaks the listing.
+    pattern: '^.+: Episode \d{2} - .+$'
+
+  - id: no-speaker-labels
+    type: forbidden_pattern
+    description: >
+      A speaker label was found. This is a single voice, so the engine would
+      read the label aloud as if it were part of the script.
+    pattern: '^\s*[A-Z][A-Za-z ]{0,20}:\s'
+    # The title line is exempt: "Series: Episode 01 - Title" is a title to a
+    # reader and a speaker label to a regular expression.
+    skip_lines: 1
+
+  - id: no-stage-directions
+    type: forbidden_pattern
+    description: >
+      A bracketed direction was found. The engine reads brackets aloud, so
+      "(pause)" becomes the spoken word "pause".
+    pattern: '[\(\[][^\)\]]{0,40}[\)\]]'
+    severity: warning
+
+  - id: sentence-length
+    type: max_sentence_length
+    description: >
+      A sentence is too long to follow by ear. A listener who misses the start
+      of a long sentence cannot recover it without rewinding.
+    limit: 120
+
+  - id: episode-length
+    type: word_count_between
+    description: >
+      An episode should run roughly 10 to 25 minutes when read aloud.
+    # A warning, not an error: a short episode is a judgement call, not a
+    # defect. Only things that would actually break for the listener fail.
+    severity: warning
+    min: 1200
+    max: 4000
+
+  - id: no-urls
+    type: forbidden_pattern
+    description: >
+      A web address was found. The engine reads it out character by character,
+      which is unlistenable and tells the listener nothing.
+    pattern: 'https?://\S+'

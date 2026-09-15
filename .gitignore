@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Never commit source books, generated chapters, drafts or reports.
+# They are someone else's copyright, or they are private work in progress.
+chapters/
+drafts/
+*.epub
+*.mobi
+report.md
+
+.env
+.DS_Store
+.idea/
+.vscode/
