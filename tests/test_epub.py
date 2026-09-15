@@ -33,6 +33,15 @@ def test_paragraph_breaks_survive_tag_stripping(epub_factory, long_body):
     assert "dog again.A second" not in text, "words must not be glued across the break"
 
 
+def test_line_breaks_inside_a_paragraph_are_not_paragraph_breaks(epub_factory, long_body):
+    """Many real books wrap their HTML at 80 columns. Those newlines are layout."""
+    wrapped = long_body.replace(". ", ".\n")
+    book = epub_factory([("Chapter", f"{wrapped}\n\nA second paragraph here.")])
+    text = split_epub(book)[0].text
+
+    assert text.split("\n\n") == ["Chapter", long_body, "A second paragraph here."]
+
+
 def test_style_and_script_contents_are_not_treated_as_prose(epub_factory, long_body):
     book = epub_factory([("Chapter", long_body)])
     text = split_epub(book)[0].text

@@ -18,8 +18,10 @@ from contentworks.rules import Rule, RuleSet
 
 # Sentence ends, for both Latin and CJK punctuation. A Latin full stop only
 # ends a sentence when whitespace or the end of the text follows it, so "3.5"
-# and "example.com" stay in one piece. Full-width marks always end one.
-SENTENCE_END = re.compile(r"[.!?](?=\s|$)|[。！？]")
+# and "example.com" stay in one piece. Full-width marks always end one. So does
+# a blank line: a title or heading has no full stop, but it is not part of the
+# sentence that follows it.
+SENTENCE_END = re.compile(r"[.!?](?=\s|$)|[。！？]|\n\s*\n")
 
 
 @dataclass(frozen=True)

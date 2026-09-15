@@ -160,5 +160,29 @@ def test_split_sentences_handles_both_punctuation_families():
     assert split_sentences("第一句。第二句！") == ["第一句。", "第二句！"]
 
 
+def test_a_blank_line_ends_a_sentence():
+    """A title has no full stop, but it is not the start of the next sentence."""
+    assert split_sentences("Series: Episode 01 - Title\n\nFirst one. Second one.") == [
+        "Series: Episode 01 - Title",
+        "First one.",
+        "Second one.",
+    ]
+
+
+def test_a_long_sentence_after_a_title_is_reported_on_its_own_line():
+    rule = Rule(
+        id="len",
+        type="max_sentence_length",
+        description="too long to follow by ear",
+        settings={"limit": 30},
+    )
+    text = "Series: Episode 01 - Title\n\n" + "word " * 10 + "end."
+    findings = check_text(text, ruleset(rule))
+
+    assert len(findings) == 1
+    assert findings[0].line == 3
+    assert findings[0].excerpt.startswith("word")
+
+
 def test_no_rules_means_no_findings():
     assert check_text("anything at all", RuleSet(name="empty", rules=())) == []

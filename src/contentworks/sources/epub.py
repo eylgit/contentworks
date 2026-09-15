@@ -9,7 +9,8 @@ The work that is not obvious:
 * The reading order lives in the *spine*, not in the filenames. Files are often
   named ``part0007.xhtml`` in an order that has nothing to do with the book.
 * Paragraph boundaries have to survive tag stripping, or the whole chapter
-  arrives as one unbroken wall of text.
+  arrives as one unbroken wall of text. The newlines in the source do not mark
+  them: many books wrap their HTML at 80 columns, inside a single paragraph.
 * Real books contain front matter, copyright pages and empty navigation stubs.
   Those are chapters as far as the file format is concerned and noise as far as
   a reader is concerned, so very short sections are dropped by default.
@@ -38,6 +39,10 @@ BLOCK_TAGS = {
 SKIP_TAGS = {"script", "style", "head", "title"}
 
 HEADING_TAGS = ("h1", "h2", "h3", "h4")
+
+# Marks where a block tag opened or closed. Not "\n", because a newline in the
+# source is only layout. The ASCII record separator never appears in prose.
+BLOCK_BREAK = "\x1e"
 
 
 class EpubError(Exception):
@@ -88,7 +93,7 @@ class _TextExtractor(HTMLParser):
         elif tag in HEADING_TAGS and not self._heading_parts:
             self._heading_depth += 1
         if tag in BLOCK_TAGS:
-            self._parts.append("\n")
+            self._parts.append(BLOCK_BREAK)
 
     def handle_endtag(self, tag: str) -> None:
         if tag in SKIP_TAGS and self._skip_depth:
@@ -96,7 +101,7 @@ class _TextExtractor(HTMLParser):
         elif tag in HEADING_TAGS and self._heading_depth:
             self._heading_depth -= 1
         if tag in BLOCK_TAGS:
-            self._parts.append("\n")
+            self._parts.append(BLOCK_BREAK)
 
     def handle_data(self, data: str) -> None:
         if self._skip_depth:
@@ -112,7 +117,7 @@ class _TextExtractor(HTMLParser):
     @property
     def text(self) -> str:
         raw = "".join(self._parts)
-        paragraphs = [normalise_whitespace(block) for block in raw.split("\n")]
+        paragraphs = [normalise_whitespace(block) for block in raw.split(BLOCK_BREAK)]
         return "\n\n".join(p for p in paragraphs if p)
 
 

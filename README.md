@@ -37,8 +37,15 @@ rules, and none of them should require a code change.
 
 ## Install
 
+Not on PyPI yet. Install from source, inside a virtual environment — recent
+Python installations refuse `pip install` outside one:
+
 ```bash
-pip install contentworks
+git clone https://github.com/eylgit/contentworks.git
+cd contentworks
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
 ```
 
 Python 3.10 or newer. One runtime dependency: PyYAML.
@@ -143,7 +150,7 @@ src/contentworks/
 it possible to add a web interface later without touching the core, and what
 makes the core testable without pretending to be a terminal.
 
-39 tests cover the parts that fail quietly: reading order, paragraph boundaries
+42 tests cover the parts that fail quietly: reading order, paragraph boundaries
 surviving tag stripping, line numbers pointing at the right line, and every rule
 type checked both ways — that it fires when it should, and stays silent when it
 should not.
@@ -153,6 +160,9 @@ should not.
 ## Limits, stated plainly
 
 - **EPUB only.** PDF and MOBI are not supported.
+- **Front matter is dropped only when it is short.** Anything under 100 words
+  goes. Project Gutenberg's 3,000-word licence at the end of every book does
+  not, and arrives as a chapter.
 - **The checks are mechanical.** They catch what can be decided by reading the
   text — patterns, formatting, length. They cannot tell you whether the writing
   is any good.
@@ -168,6 +178,8 @@ should not.
 ```bash
 git clone https://github.com/eylgit/contentworks.git
 cd contentworks
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
 pytest
 ruff check .
